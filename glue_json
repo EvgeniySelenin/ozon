@@ -1,0 +1,45 @@
+import pandas as pd
+import json
+
+mov_cat = dict()
+n=0
+
+outjsn_to = json.load(open(r'C:\SEG\CB\30062023\катка\BSCRIPTS-1079_export.json', encoding='utf-8'))
+
+categories = {
+    "Прочие вопросы": r"C:\SEG\CB\30062023\катка\BSCRIPTS-1082_export (4).json",
+    "Данные агента (график, описание, ограничения)": r"C:\SEG\CB\30062023\катка\BSCRIPTS-1082_export (4).json",
+    "Претензии": r"C:\SEG\CB\30062023\катка\BSCRIPTS-1082_export (4).json",
+    
+}
+
+for cat in categories:
+    mov_cat[cat] = json.load(open(categories[cat], encoding='utf-8'))
+
+def f(oj, j, gc, gf, d):
+    global n
+    if type(d)==dict:
+        if 'sub_dialog' in d.keys():
+            if d['sub_dialog'] not in ["call_operator", "close_ticket", "close_ticket_silent", "exit", "main"]:
+                oj["graphsContent"][d['sub_dialog']] = {'default': 'Default', 
+                                                    'nodes': j[j['index']==d['sub_dialog']].nodes.values[0]}
+                print(n:=n+1, d['sub_dialog'])
+            f(oj, j, gc, gf, gc[d['sub_dialog']])
+        for k in d.keys():
+            f(oj, j, gc, gf, d[k])
+    else:
+        return 0
+
+for m in mov_cat:
+    j = pd.DataFrame(mov_cat[m]["graphsContent"]).T.reset_index()
+    outjsn_to['graphsContent'][m] = {'default': 'Default', 
+                                       'nodes': j[j['index']==m].nodes.values[0]}
+    print('=============================')
+    print(n:=1, m)
+    f(outjsn_to, j, mov_cat[m]["graphsContent"], mov_cat[m]["graphs"], mov_cat[m]["graphsContent"][m])
+
+
+outfile = r'C:\SEG\CB\30062023\катка\outjsn.json'
+
+with open(outfile, 'w', encoding='utf-8') as f:
+    json.dump(outjsn_to, f, ensure_ascii=False, indent=4)

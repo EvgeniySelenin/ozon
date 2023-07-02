@@ -1,0 +1,20 @@
+#%% НТО
+import pandas as pd
+
+df = pd.read_csv(r'C:\SEG\CB\30062023\1688104392235788664.csv', sep=';')
+
+df['Закрыто'] = pd.to_datetime(df['Закрыто'], format='%d.%m.%Y %H:%M')
+
+df['Дата'] = df['Закрыто'].dt.strftime('%d.%m.%Y')
+df['Время'] = df['Закрыто'].dt.strftime('%H:%M:%S')
+
+df_intent = df[df['Маршрут']!='1ЛП: Чат-бот. Без темы M'].sort_values(by=['Дата', 'Время'])
+
+print("Total НТО - ", df.shape[0])
+print("Intent НТО - ", df_intent.shape[0])
+
+n = 300
+nn = df_intent.shape[0]//n if df_intent.shape[0]//n > 0 else 1
+df_sito = df_intent.iloc[::nn]
+
+df_sito[['Id','Маршрут', 'Дата', 'Время']].to_excel(r'C:\SEG\CB\30062023\file.xlsx')

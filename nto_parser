@@ -1,0 +1,102 @@
+import re
+import time
+import pandas as pd
+import random
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
+
+"""
+chrome://version/ 
+https://sites.google.com/chromium.org/driver/downloads?authuser=0
+pip install beautifulsoup4
+pip install selenium
+systempropertiesadvanced
+"""
+
+def parce_file(df, b):
+    
+    df['Тег'] = 0
+    df['Реплика'] = 0
+    df['Комментарий'] = 0
+    
+    df_mod = pd.read_excel(r'C:\SEG\CB\НТОшки\phrases.xlsx')
+    df_mod_list = df_mod.Phrase.str.lower().to_list()
+    
+    i = 0
+    for ticket in df['ID задания']:
+        try:
+            b.get("https://crm.ozon.ru/tickets/" + str(ticket))
+            tag = 'Требуется ручная проверка'
+            comment = '-'
+            msg = '-'
+            for _ in range(20):
+                time.sleep(1)
+                fulltxt = b.page_source
+                txt = fulltxt.split(f'{ticket}')[0]
+                soup = BeautifulSoup(txt, 'lxml')
+                if soup.find('div', attrs={'class': 'chat-messages-list'}):
+                    txt_container = soup.find('div', attrs={'class': 'chat-messages-list'})
+                    txt_last = txt_container.find_all('div', attrs={'class': 'chat-message-content-blocks'})
+                    if "На связи чат-бот Ози." in fulltxt:
+                        try:
+                            print("Ози здесь", txt_last[-1], "здесь")
+                            msg = txt_last[-1].text if txt_last[-1].text else 'empty result'
+                            if msg.strip().lower() in df_mod_list:
+                                tag = "Корректно"
+                                comment = '-'
+                                print("Корректно")
+                        except:
+                            print("Ози неадекват")
+                            tag = "Корректно"
+                            comment = "Таймаут"
+                            print("Таймаут")
+                    else:
+                        msg = txt_last[-1].text if txt_last[-1].text else 'empty result'
+                        print(ticket, msg)
+                        if msg.strip().lower() in df_mod_list:
+                            tag = "Корректно"
+                            comment = '-'
+                            print("Корректно")
+                    i = df.loc[df['ID задания']==ticket].index.values[0]
+                    print(ticket, i)
+                    df.iat[i, 1] = tag
+                    df.iat[i, 2] = msg
+                    df.iat[i, 3] = comment
+                    print("---------------------------")
+                    break
+        except:
+            print('exception, fucking shit')
+            continue
+    return df
+
+#%%
+%%time
+
+with open('C:\SEG\myproj\spyder\spbase\ozon_pass.txt', 'r', encoding='utf-8') as f: up = f.readlines()
+username = up[0].strip()
+password = up[1]
+
+df1 = pd.read_excel(r"C:\SEG\CB\НТОшки\dayly_NTO.xlsx")
+#df2 = pd.read_excel(r"C:\SEG\CB\НТОшки\dayly_NTO_Den.xlsx")
+
+# df = df.head(10)
+
+options_chrome = webdriver.ChromeOptions()
+
+# chrome://version/ Путь к профилю
+options_chrome.add_argument(r'user-data-dir=C:\Users\Евгений\AppData\Local\Google\Chrome\User Data\Default')
+
+options_chrome.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+
+with webdriver.Chrome(options=options_chrome) as b:
+    b.get("https://crm.ozon.ru/")
+    time.sleep(1)
+    b.execute_script(
+f"""var a1 = document.querySelectorAll("form");
+a1[0].childNodes[0].value="{username}"; 
+a1[0].childNodes[1].childNodes[0].childNodes[0].childNodes[0].childNodes[0].childNodes[1].value="{password}";""")
+    button = b.find_element(By.TAG_NAME, 'button')
+    button.click()
+    time.sleep(12)
+    parce_file(df1, b).to_excel(r"C:\SEG\CB\НТОшки\файл.xlsx")

@@ -16,7 +16,6 @@ def nto(path, files, n):
         print("Total НТО - ", df.shape[0])
         print("Intent НТО - ", df_intent.shape[0])
         
-        #n = 300
         nn = df_intent.shape[0]//n if df_intent.shape[0]//n > 0 else 1
         df_sito = df_intent.iloc[::nn]
         

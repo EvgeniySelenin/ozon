@@ -1,4 +1,5 @@
 #%% Отлов топиков, солюшенов, кнопок и сообщений для отчётности
+#%% Отлов топиков, солюшенов, кнопок и сообщений для отчётности
 %%time
 import json
 import pandas as pd
@@ -32,7 +33,7 @@ def jsn_param_nxt(d, node):
         for k in d:
             jsn_param_nxt(k, node)
 
-jsndict= json.load(open(r'C:\SEG\CB\28062023\turbo_pvz_bot_export.json', 
+jsndict= json.load(open(r'C:\SEG\CB\26072023\chat_seller_bot_export500.json', 
                         encoding='utf-8'))
 
 gC = jsndict['graphsContent']
@@ -166,7 +167,7 @@ for i, d in enumerate(df.graph):
     df.at[i ,'len'] = len(one_path)
     
     
-with pd.ExcelWriter(rf'C:\SEG\CB\28062023\turbo_pvz_{date.today()}.xlsx') as w:
+with pd.ExcelWriter(rf'C:\SEG\CB\26072023\report_500_2023-07-26.xlsx') as w:
     df.index.name = "#"
     df_buttons.index.name='#'
     df.to_excel(w, sheet_name='topics')

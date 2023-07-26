@@ -1,0 +1,37 @@
+%%time
+import pandas as pd
+import json
+
+outjsn_to = json.load(open(r'C:\SEG\CB\23072023\BSCRIPTS-1099_export.json', 
+                           encoding='utf-8'))
+
+
+delgraphs = ['RU SC Удаление аккаунта',
+             'RU SC Изменить систему налогообложения',
+             'RU SC Выкуп Озоном заказов ЕАЭС',
+             'RU SC Изменить название магазина'] 
+
+def to_del_graph(gc, dg_list):
+    if type(gc) == dict:
+        if 'sub_dialog' in gc.keys():
+            if gc['sub_dialog'] not in ["call_operator", "close_ticket", 
+                                        "close_ticket_silent", "exit", "main"]:
+                dg_list.append(gc['sub_dialog'])
+        for k in gc.keys():
+            to_del_graph(gc[k], dg_list)
+    else:
+        return 0
+
+dg_list = []
+
+for delgraph in delgraphs:
+    dg_list.append(delgraph)
+    to_del_graph(outjsn_to['graphsContent'][delgraph], dg_list)
+
+for dg in dg_list:
+    del outjsn_to['graphsContent'][dg]
+    print(dg)
+    
+with open(r'C:\SEG\CB\23072023\BSCRIPTS-1099_export_clear.json', 
+          'w', encoding='utf-8') as f:
+    json.dump(outjsn_to, f, ensure_ascii=False, indent=4)

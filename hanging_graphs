@@ -1,0 +1,42 @@
+#%% подвешенные графы
+%%time
+import json
+
+jsndict= json.load(open(r'C:\SEG\CB\26072023\chat_seller_bot_export500.json', 
+                        encoding='utf-8'))
+
+
+def jsn_param(d, node):
+    global dparams
+    if type(d) == dict:
+        for k in d.keys():
+            if k == node:
+                dparams.append(d[k])
+                #print(d[k])
+            jsn_param(d[k], node)
+    if type(d) == list:
+        for k in d:
+            jsn_param(k, node)
+
+dparams = []
+jsn_param(jsndict, 'sub_dialog')
+#dparams = [d for d in dparams if d!='']
+
+crl = []
+
+for j in jsndict['graphs'].keys():
+    if j not in dparams:
+        if j != 'main':
+            crl.append(j)
+            
+for j in jsndict['graphsContent'].keys():
+    if j not in dparams:
+        if j != 'main':
+            crl.append(j)
+        
+for d in dparams:
+    if d not in jsndict['graphs'].keys():
+        if d != 'main':
+            crl.append(d)
+        
+print(f'подвешенныx {len(list(set(crl)))}:', list(set(crl)))

@@ -1,5 +1,4 @@
 %%time
-import pandas as pd
 import json
 
 outjsn_to = json.load(open(r'C:\SEG\CB\23072023\BSCRIPTS-1099_export.json', 

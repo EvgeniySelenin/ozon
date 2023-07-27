@@ -2,7 +2,6 @@
 %%time
 import json
 import pandas as pd
-from datetime import date
 
 def jsn_param_bg(d, node):
     global dparams
@@ -11,18 +10,15 @@ def jsn_param_bg(d, node):
             if k == node:
                 if (d[k] != {'groupName': 'RU SC Назад', 'id': 534}) and (d[k] != {'groupName': 'RU SC Спасибо+Главное меню+Назад', 'id': 707}):
                     dparams.append(d[k])
-                #print(d[k])
             jsn_param_bg(d[k], node)
     if type(d) == list:
-        for k in d:
-            jsn_param_bg(k, node)
+        for k in d: jsn_param_bg(k, node)
             
 def jsn_param_nxt(d, node):
     global dparams
     if type(d) == dict:
         for k in d.keys():
             if k == node:
-                #dparams.append(d[k])
                 if d[k].startswith('locals.button_pressed'):
                     dk = d[k].split(" && ")[0]
                     if int(dk[-4:]) not in [3397, 2566, 3395, 3394, 3396]:
@@ -50,9 +46,7 @@ for k in dparams_dict_gr.keys():
     if dparams != []:
         dparams_dict_nxt[k] = dparams
 
-
 DF = pd.DataFrame(columns=['graph', 'button_group', 'id_button_group', 'button', 'id_button'])
-
 for g in dparams_dict_gr.keys():
     for button in dparams_dict_nxt[g]:
         df = pd.DataFrame()
@@ -64,13 +58,9 @@ for g in dparams_dict_gr.keys():
         DF = pd.concat([DF, df],axis=0, ignore_index=True)
 
 df_buttons = DF.copy()
-
-
-
 df = pd.DataFrame(columns=['session_topic', 'len_topic', 'button_group', 'id_button_group', 'solution', 
                            'len', 'fullpath', 'level0', 'level1', 'level2', 'level3', 'level4', 
                            'graph', 'node', 'message'])
-
 
 gC = jsndict['graphsContent']
 for n in gC.keys():
@@ -82,7 +72,6 @@ for n in gC.keys():
             nodes_n1_exec = gC[n]['nodes'][n1]['execute']
             button_group = '-'
             id_button_group = '-'
-            
             if (nodes_n1_act != []) and (nodes_n1_exec != []):
                 nodes_n1_mess = gC[n]['nodes'][n1]['actions'][0].keys()
                 if 'messages' in nodes_n1_mess:
@@ -95,15 +84,12 @@ for n in gC.keys():
                     solution = '_'
                     session_topic = '_'
                     for e in nodes_n1_exec:
-                        if 'solution' in e:
-                            solution = e
-                        if 'session_topic' in e:
-                            session_topic = e
+                        if 'solution' in e: solution = e
+                        if 'session_topic' in e: session_topic = e
                     graph = n
                     lnode = n1
                     message = gC[n]['nodes'][n1]['actions'][0]['messages'][0]
-                    df = pd.concat([df, 
-                                    pd.DataFrame({'session_topic': [session_topic], 
+                    df = pd.concat([df, pd.DataFrame({'session_topic': [session_topic], 
                                                   'button_group': [button_group],
                                                   'id_button_group': [id_button_group],
                                                   'solution': [solution], 
@@ -112,24 +98,19 @@ for n in gC.keys():
                                                   'message': [message]})], 
                                                  axis=0, ignore_index=True)
                         
-
 def extr(d):
-    if d == '_':
-        return d
-    else:
-        return d.split(',')[-1].strip()[1:-2]
+    if d == '_': return d
+    else: return d.split(',')[-1].strip()[1:-2]
 
 df.session_topic = df.session_topic.apply(extr)
 df.solution = df.solution.apply(extr)
 df['len_topic'] = df.session_topic.str.len()
 
-
 def jsn_param(d, node):
     global dparams
     if type(d) == dict:
         for k in d.keys():
-            if k == node:
-                dparams.append(d[k])
+            if k == node: dparams.append(d[k])
             jsn_param(d[k], node)
 
 
@@ -137,9 +118,7 @@ dparams_dict = {}
 for graph in jsndict['graphs'].keys():
     dparams = []
     jsn_param(jsndict['graphsContent'][graph], 'sub_dialog')
-    if dparams != []:
-        dparams_dict[graph] = dparams
-
+    if dparams != []: dparams_dict[graph] = dparams
 
 def fp(dparams_dict, df_graph_i):
     global one_path
@@ -148,13 +127,11 @@ def fp(dparams_dict, df_graph_i):
             one_path.append(dk)
             fp(dparams_dict, dk)
 
-
 for i, d in enumerate(df.graph):
     one_path = []
     fp(dparams_dict, d)
-   # print(d)
     df.at[i ,'fullpath'] = '\n'.join(one_path[::-1])
-    if len(one_path) >= 1:
+    if len(one_path) >= 1: 
         df.at[i ,'level0'] = one_path[::-1][0]
         if len(one_path) >= 2:
             df.at[i ,'level1'] = one_path[::-1][1]
@@ -171,8 +148,7 @@ df.fillna('(пусто)', inplace=True)
 dfp = df[(df.len_topic!=1) & 
          (df.len_topic!=9) &
          (df.len_topic!=10)].pivot_table(index=['solution', 'level1', 'level2'], 
-                                         values='session_topic', 
-                                         aggfunc='count')
+                                         values='session_topic', aggfunc='count')
 
 with pd.ExcelWriter(rf'C:\SEG\CB\27072023\report_501_2023-07-27_1.xlsx') as w:
     df.index.name = "#"

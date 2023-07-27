@@ -1,5 +1,4 @@
 #%% Отлов топиков, солюшенов, кнопок и сообщений для отчётности
-#%% Отлов топиков, солюшенов, кнопок и сообщений для отчётности
 %%time
 import json
 import pandas as pd
@@ -33,7 +32,7 @@ def jsn_param_nxt(d, node):
         for k in d:
             jsn_param_nxt(k, node)
 
-jsndict= json.load(open(r'C:\SEG\CB\26072023\chat_seller_bot_export500.json', 
+jsndict= json.load(open(r'C:\SEG\CB\27072023\chat_seller_bot_export501.json', 
                         encoding='utf-8'))
 
 gC = jsndict['graphsContent']
@@ -68,7 +67,7 @@ df_buttons = DF.copy()
 
 
 
-df = pd.DataFrame(columns=['session_topic', 'button_group', 'id_button_group', 'solution', 
+df = pd.DataFrame(columns=['session_topic', 'len_topic', 'button_group', 'id_button_group', 'solution', 
                            'len', 'fullpath', 'level0', 'level1', 'level2', 'level3', 'level4', 
                            'graph', 'node', 'message'])
 
@@ -122,6 +121,7 @@ def extr(d):
 
 df.session_topic = df.session_topic.apply(extr)
 df.solution = df.solution.apply(extr)
+df['len_topic'] = df.session_topic.str.len()
 
 
 def jsn_param(d, node):
@@ -166,9 +166,17 @@ for i, d in enumerate(df.graph):
                         df.at[i ,'level4'] = one_path[::-1][4]
     df.at[i ,'len'] = len(one_path)
     
-    
-with pd.ExcelWriter(rf'C:\SEG\CB\26072023\report_500_2023-07-26.xlsx') as w:
+df.fillna('(пусто)', inplace=True)
+
+dfp = df[(df.len_topic!=1) & 
+         (df.len_topic!=9) &
+         (df.len_topic!=10)].pivot_table(index=['solution', 'level1', 'level2'], 
+                                         values='session_topic', 
+                                         aggfunc='count')
+
+with pd.ExcelWriter(rf'C:\SEG\CB\27072023\report_501_2023-07-27_1.xlsx') as w:
     df.index.name = "#"
     df_buttons.index.name='#'
     df.to_excel(w, sheet_name='topics')
+    dfp.to_excel(w, sheet_name='svod')
     df_buttons.to_excel(w, sheet_name='buttons')

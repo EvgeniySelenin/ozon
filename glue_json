@@ -26,7 +26,11 @@ def f(oj, j, gc, gf, d):
                 print(n:=n+1, d['sub_dialog'])
             f(oj, j, gc, gf, gc[d['sub_dialog']])
         for k in d.keys():
-            f(oj, j, gc, gf, d[k])
+            if k.startswith("Редирект"): 
+                print(k)
+                continue
+            else:
+                f(oj, j, gc, gf, d[k])
     else:
         return 0
 

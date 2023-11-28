@@ -20,7 +20,7 @@ def f(oj, j, gc, gf, d):
     global n
     if type(d)==dict:
         if 'sub_dialog' in d.keys():
-            if d['sub_dialog'] not in ["call_operator", "close_ticket", "close_ticket_silent", "exit", "main"]:
+            if d['sub_dialog'] not in ["call_operator_without_bot_message", "call_operator", "close_ticket", "close_ticket_silent", "exit", "main"]:
                 oj["graphsContent"][d['sub_dialog']] = {'default': 'Default', 
                                                     'nodes': j[j['index']==d['sub_dialog']].nodes.values[0]}
                 print(n:=n+1, d['sub_dialog'])

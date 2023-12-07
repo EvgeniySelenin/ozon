@@ -109,6 +109,9 @@ df['len_topic'] = df.session_topic.str.len()
 def jsn_param(d, node):
     global dparams
     if type(d) == dict:
+        if k.startswith("Редирект"): 
+             print(k)
+             continue
         for k in d.keys():
             if k == node: dparams.append(d[k])
             jsn_param(d[k], node)

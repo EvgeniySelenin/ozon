@@ -12,7 +12,8 @@ def jsn_param_bg(d, node):
                     dparams.append(d[k])
             jsn_param_bg(d[k], node)
     if type(d) == list:
-        for k in d: jsn_param_bg(k, node)
+        for k in d: 
+            jsn_param_bg(k, node)
             
 def jsn_param_nxt(d, node):
     global dparams
@@ -28,7 +29,7 @@ def jsn_param_nxt(d, node):
         for k in d:
             jsn_param_nxt(k, node)
 
-jsndict= json.load(open(r'C:\SEG\CB\27072023\chat_seller_bot_export501.json', 
+jsndict= json.load(open(r'C:\SEG\CB\18122023\chat_seller_bot_export(1).json', 
                         encoding='utf-8'))
 
 gC = jsndict['graphsContent']
@@ -109,10 +110,10 @@ df['len_topic'] = df.session_topic.str.len()
 def jsn_param(d, node):
     global dparams
     if type(d) == dict:
-        if k.startswith("Редирект"): 
-             print(k)
-             continue
         for k in d.keys():
+            if k.startswith("Редирект"): 
+                print(k)
+                continue
             if k == node: dparams.append(d[k])
             jsn_param(d[k], node)
 
@@ -153,7 +154,7 @@ dfp = df[(df.len_topic!=1) &
          (df.len_topic!=10)].pivot_table(index=['solution', 'level1', 'level2'], 
                                          values='session_topic', aggfunc='count')
 
-with pd.ExcelWriter(rf'C:\SEG\CB\27072023\report_501_2023-07-27_1.xlsx') as w:
+with pd.ExcelWriter(r'C:\SEG\CB\18122023\chat_seller_bot_export(1).xlsx') as w:
     df.index.name = "#"
     df_buttons.index.name='#'
     df.to_excel(w, sheet_name='topics')
